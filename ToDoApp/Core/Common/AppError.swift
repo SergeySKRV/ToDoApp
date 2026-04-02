@@ -12,7 +12,7 @@ enum AppError: LocalizedError {
     case noData
     case decodingFailed
     case objectNotFound
-    case persistenceError(String)
+    case persistenceFailed(String)
     case networkFailed(String)
     
     var errorDescription: String? {
@@ -25,7 +25,7 @@ enum AppError: LocalizedError {
             return "Failed to decode data"
         case .objectNotFound:
             return "Object not found"
-        case .persistenceError(let message):
+        case .persistenceFailed(let message):
             return "Persistence error: \(message)"
         case .networkFailed(let message):
             return "Network error: \(message)"
