@@ -8,7 +8,7 @@
 import Foundation
 
 protocol KeyValueStoreProtocol {
-    func bool(forKey: String) throws -> Bool
+    func bool(forKey: String) -> Bool
     func set(_ value: Bool, forKey: String)
 }
 
