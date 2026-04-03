@@ -167,7 +167,7 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
                 for dto in todos {
                     let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
                     request.fetchLimit = 1
-                    request.predicate = NSPredicate(format: "remoteID == %11d", dto.id)
+                    request.predicate = NSPredicate(format: "remoteID == %@", NSNumber(value: dto.id))
                     
                     let existingItem = try context.fetch(request).first
                     if let existingItem {
