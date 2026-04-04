@@ -1,10 +1,3 @@
-//
-//  TaskListPresenter.swift
-//  ToDoApp
-//
-//  Created by Сергей Скориков on 02.04.2026.
-//
-
 import Foundation
 
 final class TaskListPresenter: TaskListPresenterProtocol {
@@ -15,8 +8,16 @@ final class TaskListPresenter: TaskListPresenterProtocol {
     private var todos: [TodoModel] = []
     
     func viewDidLoad() {
+        refreshTodos()
+    }
+
+    func viewWillAppear() {
+        refreshTodos()
+    }
+    
+    private func refreshTodos() {
         view?.showLoading(true)
-        interactor?.preloadTodosIfNeeded()
+        interactor?.loadTodos()
     }
     
     func didTapAdd() {
@@ -53,11 +54,11 @@ final class TaskListPresenter: TaskListPresenterProtocol {
             TaskListCellViewModel(
                 id: $0.id,
                 title: $0.title,
-                description: $0.taskDescription.isEmpty ? "Without description" : $0.taskDescription,
+                description: $0.taskDescription.isEmpty ? L10n.taskWithoutDescription : $0.taskDescription,
                 createdAtText: DateFormatter.todoDate.string(from: $0.createdAt),
-                statusText: $0.isCompleted ? "Completed" : "Not completed",
+                statusText: $0.isCompleted ? L10n.taskCompleted : L10n.taskNotCompleted,
                 isCompleted: $0.isCompleted
-                )
+            )
         }
     }
 }

@@ -14,21 +14,21 @@ enum AppError: LocalizedError {
     case objectNotFound
     case persistenceFailed(String)
     case networkFailed(String)
-    
+
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return L10n.errorInvalidURL
         case .noData:
-            return "No data"
+            return L10n.errorNoData
         case .decodingFailed:
-            return "Failed to decode data"
+            return L10n.errorDecodingFailed
         case .objectNotFound:
-            return "Object not found"
+            return L10n.errorObjectNotFound
         case .persistenceFailed(let message):
-            return "Persistence error: \(message)"
+            return String(format: L10n.errorPersistenceFailedFormat, message)
         case .networkFailed(let message):
-            return "Network error: \(message)"
+            return String(format: L10n.errorNetworkFailedFormat, message)
         }
     }
 }

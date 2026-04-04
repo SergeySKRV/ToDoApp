@@ -11,11 +11,11 @@ final class TodoCell: UITableViewCell {
     static let reuseIdentifier = "TodoCell"
 
     private let statusImageView = UIImageView()
+    private let textContainerView = UIView()
     private let titleLabel = UILabel()
     private let descriptionLabel = UILabel()
     private let dateLabel = UILabel()
     private let dividerView = UIView()
-    private let textStack = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -40,6 +40,7 @@ final class TodoCell: UITableViewCell {
                 string: viewModel.title,
                 attributes: [
                     .foregroundColor: AppColors.secondaryText,
+                    .font: UIFont.systemFont(ofSize: 16, weight: .semibold),
                     .strikethroughStyle: NSUnderlineStyle.single.rawValue
                 ]
             )
@@ -47,8 +48,8 @@ final class TodoCell: UITableViewCell {
             descriptionLabel.attributedText = NSAttributedString(
                 string: viewModel.description,
                 attributes: [
-                    .foregroundColor: AppColors.tertiaryText,
-                    .strikethroughStyle: NSUnderlineStyle.single.rawValue
+                    .foregroundColor: AppColors.secondaryText,
+                    .font: UIFont.systemFont(ofSize: 12, weight: .regular)
                 ]
             )
 
@@ -58,14 +59,16 @@ final class TodoCell: UITableViewCell {
             titleLabel.attributedText = NSAttributedString(
                 string: viewModel.title,
                 attributes: [
-                    .foregroundColor: AppColors.primaryText
+                    .foregroundColor: AppColors.primaryText,
+                    .font: UIFont.systemFont(ofSize: 16, weight: .semibold)
                 ]
             )
 
             descriptionLabel.attributedText = NSAttributedString(
                 string: viewModel.description,
                 attributes: [
-                    .foregroundColor: AppColors.secondaryText
+                    .foregroundColor: AppColors.secondaryText,
+                    .font: UIFont.systemFont(ofSize: 12, weight: .regular)
                 ]
             )
 
@@ -85,47 +88,60 @@ final class TodoCell: UITableViewCell {
         statusImageView.contentMode = .scaleAspectFit
         statusImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
 
-        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        textContainerView.translatesAutoresizingMaskIntoConstraints = false
+
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.numberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingTail
 
-        descriptionLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.numberOfLines = 2
         descriptionLabel.lineBreakMode = .byTruncatingTail
 
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
         dateLabel.textColor = AppColors.tertiaryText
+        dateLabel.numberOfLines = 1
 
         dividerView.translatesAutoresizingMaskIntoConstraints = false
         dividerView.backgroundColor = AppColors.divider
 
-        textStack.translatesAutoresizingMaskIntoConstraints = false
-        textStack.axis = .vertical
-        textStack.spacing = 4
-        textStack.alignment = .fill
-        textStack.addArrangedSubview(titleLabel)
-        textStack.addArrangedSubview(descriptionLabel)
-        textStack.addArrangedSubview(dateLabel)
-
         contentView.addSubview(statusImageView)
-        contentView.addSubview(textStack)
+        contentView.addSubview(textContainerView)
         contentView.addSubview(dividerView)
+
+        textContainerView.addSubview(titleLabel)
+        textContainerView.addSubview(descriptionLabel)
+        textContainerView.addSubview(dateLabel)
 
         NSLayoutConstraint.activate([
             statusImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            statusImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
             statusImageView.widthAnchor.constraint(equalToConstant: 24),
             statusImageView.heightAnchor.constraint(equalToConstant: 24),
 
-            textStack.leadingAnchor.constraint(equalTo: statusImageView.trailingAnchor, constant: 12),
-            textStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            textStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            textStack.bottomAnchor.constraint(equalTo: dividerView.topAnchor, constant: -12),
+            textContainerView.leadingAnchor.constraint(equalTo: statusImageView.trailingAnchor, constant: 12),
+            textContainerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            textContainerView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
-            dividerView.leadingAnchor.constraint(equalTo: textStack.leadingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: textContainerView.topAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: textContainerView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: textContainerView.trailingAnchor),
+
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 6),
+            descriptionLabel.leadingAnchor.constraint(equalTo: textContainerView.leadingAnchor),
+            descriptionLabel.trailingAnchor.constraint(equalTo: textContainerView.trailingAnchor),
+
+            dateLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 6),
+            dateLabel.leadingAnchor.constraint(equalTo: textContainerView.leadingAnchor),
+            dateLabel.trailingAnchor.constraint(equalTo: textContainerView.trailingAnchor),
+            dateLabel.bottomAnchor.constraint(equalTo: textContainerView.bottomAnchor),
+
+            statusImageView.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+
+            dividerView.leadingAnchor.constraint(equalTo: textContainerView.leadingAnchor),
             dividerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             dividerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            dividerView.heightAnchor.constraint(equalToConstant: 0.5)
+            dividerView.heightAnchor.constraint(equalToConstant: 1)
         ])
     }
 }

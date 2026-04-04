@@ -1,0 +1,49 @@
+/*
+  Localizable.strings
+  ToDoApp
+
+  Created by Сергей Скориков on 04.04.2026.
+*/
+
+/// MARK: - Common
+"common.back" = "Назад";
+"common.ok" = "OK";
+
+/// MARK: - Task List
+"tasks.title" = "Задачи";
+"search.placeholder" = "Поиск";
+
+/// MARK: - Task Details
+"task.details.createTitle" = "Новая задача";
+"task.details.editTitle" = "Редактировать";
+"task.details.error.enterTitle" = "Введите название задачи";
+
+/// MARK: - Task Content
+"task.withoutDescription" = "Без описания";
+"task.status.completed" = "Выполнено";
+"task.status.notCompleted" = "Не выполнено";
+
+/// MARK: - Task Actions
+"task.action.edit" = "Редактировать";
+"task.action.share" = "Поделиться";
+"task.action.delete" = "Удалить";
+"task.action.done" = "Готово";
+"task.action.restore" = "Вернуть";
+
+/// MARK: - Errors
+"error.title" = "Ошибка";
+"error.invalidURL" = "Некорректный URL";
+"error.noData" = "Нет данных";
+"error.decodingFailed" = "Не удалось декодировать данные";
+"error.objectNotFound" = "Объект не найден";
+"error.persistenceFailed.format" = "Ошибка сохранения: %@";
+"error.networkFailed.format" = "Ошибка сети: %@";
+
+/// MARK: - Network
+"network.incorrectResponse" = "Некорректный ответ сервера";
+
+/// MARK: - Voice Search
+"voiceSearch.permissionDenied" = "Нет доступа к микрофону или распознаванию речи";
+"voiceSearch.unavailable" = "Голосовой поиск сейчас недоступен";
+"voiceSearch.audioSessionFailed" = "Не удалось настроить аудиосессию";
+"voiceSearch.startFailed" = "Не удалось запустить распознавание речи";

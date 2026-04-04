@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import Speech
+import AVFoundation
 
 final class TaskListViewController: UIViewController {
     var presenter: TaskListPresenterProtocol?
@@ -13,14 +15,14 @@ final class TaskListViewController: UIViewController {
     private var items: [TaskListCellViewModel] = [] {
         didSet {
             let count = items.count
-            tasksCountLabel.text = "\(count) \(pluralizedTasks(count))"
+            tasksCountLabel.text = L10n.tasksCount(count)
         }
     }
 
     private let titleLabel = UILabel()
+    private let searchBar = UISearchBar()
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
-    private let searchController = UISearchController(searchResultsController: nil)
 
     private let bottomBarView = UIView()
     private let tasksCountLabel = UILabel()
@@ -40,39 +42,49 @@ final class TaskListViewController: UIViewController {
 
     private var selectedTodoIndex: Int?
 
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
+    private let audioEngine = AVAudioEngine()
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private var isVoiceSearchActive = false
+    private var isVoiceSearchAvailable = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        requestSpeechAuthorization()
         presenter?.viewDidLoad()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        presenter?.viewWillAppear()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        stopVoiceRecognition()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         bottomBarHeightConstraint?.constant = 50 + view.safeAreaInsets.bottom
-
-        if let header = tableView.tableHeaderView {
-            let width = view.bounds.width
-            if header.frame.width != width {
-                header.frame.size.width = width
-                searchController.searchBar.frame = CGRect(x: 8, y: 0, width: width - 16, height: 56)
-                tableView.tableHeaderView = header
-            }
-        }
     }
 }
 
 private extension TaskListViewController {
     func setupUI() {
         view.backgroundColor = AppColors.background
-        navigationController?.setNavigationBarHidden(true, animated: false)
 
         setupTitleLabel()
+        setupSearchBar()
         setupTableView()
         setupBottomBar()
-        setupSearch()
         setupOverlayUI()
 
         view.addSubview(titleLabel)
+        view.addSubview(searchBar)
         view.addSubview(tableView)
         view.addSubview(bottomBarView)
         view.addSubview(overlayView)
@@ -85,7 +97,12 @@ private extension TaskListViewController {
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
-            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            searchBar.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+            searchBar.heightAnchor.constraint(equalToConstant: 56),
+
+            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor),
@@ -103,9 +120,42 @@ private extension TaskListViewController {
 
     func setupTitleLabel() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.text = "Задачи"
+        titleLabel.text = L10n.tasksTitle
         titleLabel.font = .systemFont(ofSize: 34, weight: .bold)
         titleLabel.textColor = AppColors.primaryText
+    }
+
+    func setupSearchBar() {
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.delegate = self
+        searchBar.searchBarStyle = .minimal
+        searchBar.placeholder = L10n.searchPlaceholder
+        searchBar.showsCancelButton = false
+        searchBar.showsBookmarkButton = true
+        searchBar.backgroundColor = AppColors.background
+        searchBar.barTintColor = AppColors.background
+        searchBar.tintColor = AppColors.tertiaryText
+        searchBar.setImage(UIImage(systemName: "magnifyingglass"), for: .search, state: .normal)
+
+        let textField = searchBar.searchTextField
+        textField.backgroundColor = AppColors.searchBackground
+        textField.textColor = AppColors.primaryText
+        textField.tintColor = AppColors.primaryText
+        textField.font = .systemFont(ofSize: 17, weight: .regular)
+        textField.leftView?.tintColor = AppColors.tertiaryText
+        textField.clearButtonMode = .whileEditing
+        textField.borderStyle = .none
+        textField.layer.cornerRadius = 10
+        textField.clipsToBounds = true
+        textField.attributedPlaceholder = NSAttributedString(
+            string: L10n.searchPlaceholder,
+            attributes: [
+                .foregroundColor: AppColors.tertiaryText,
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular)
+            ]
+        )
+
+        updateVoiceSearchIcon()
     }
 
     func setupTableView() {
@@ -118,34 +168,9 @@ private extension TaskListViewController {
         tableView.register(TodoCell.self, forCellReuseIdentifier: TodoCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
-    }
 
-    func setupSearch() {
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.automaticallyShowsCancelButton = false
-        searchController.searchBar.placeholder = "Search"
-
-        let textField = searchController.searchBar.searchTextField
-        textField.backgroundColor = AppColors.searchBackground
-        textField.textColor = AppColors.primaryText
-        textField.tintColor = AppColors.primaryText
-        textField.leftView?.tintColor = AppColors.tertiaryText
-        textField.attributedPlaceholder = NSAttributedString(
-            string: "Search",
-            attributes: [.foregroundColor: AppColors.tertiaryText]
-        )
-
-        let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 60))
-        headerContainer.backgroundColor = AppColors.background
-
-        searchController.searchBar.frame = CGRect(x: 8, y: 0, width: view.bounds.width - 16, height: 56)
-        searchController.searchBar.searchBarStyle = .minimal
-        searchController.searchBar.barTintColor = AppColors.background
-        searchController.searchBar.backgroundColor = AppColors.background
-
-        headerContainer.addSubview(searchController.searchBar)
-        tableView.tableHeaderView = headerContainer
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        tableView.addGestureRecognizer(longPressGesture)
     }
 
     func setupBottomBar() {
@@ -153,10 +178,10 @@ private extension TaskListViewController {
         bottomBarView.backgroundColor = AppColors.bottomBarBackground
 
         tasksCountLabel.translatesAutoresizingMaskIntoConstraints = false
-        tasksCountLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        tasksCountLabel.font = .systemFont(ofSize: 11, weight: .medium)
         tasksCountLabel.textColor = AppColors.primaryText
         tasksCountLabel.textAlignment = .center
-        tasksCountLabel.text = "0 Задач"
+        tasksCountLabel.text = L10n.tasksCount(0)
 
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.color = AppColors.accent
@@ -265,20 +290,23 @@ private extension TaskListViewController {
         blurView.addGestureRecognizer(blurTap)
     }
 
-    func makeActionRow(title: String, systemImage: String, tintColor: UIColor, action: Selector) -> UIButton {
+    func makeActionRow(title: String, assetImageName: String, tintColor: UIColor, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
         button.backgroundColor = AppColors.actionMenuBackground
 
         var config = UIButton.Configuration.plain()
-        config.title = title
-        config.image = UIImage(systemName: systemImage)
+        var attributes = AttributeContainer()
+        attributes.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        attributes.foregroundColor = tintColor
+
+        config.attributedTitle = AttributedString(title, attributes: attributes)
+        config.image = UIImage(named: assetImageName)?.withRenderingMode(.alwaysTemplate)
         config.imagePlacement = .trailing
         config.imagePadding = 12
         config.baseForegroundColor = tintColor
         config.contentInsets = NSDirectionalEdgeInsets(top: 18, leading: 18, bottom: 18, trailing: 18)
-        button.configuration = config
 
-        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .regular)
+        button.configuration = config
         button.contentHorizontalAlignment = .fill
         button.addTarget(self, action: action, for: .touchUpInside)
         return button
@@ -300,22 +328,22 @@ private extension TaskListViewController {
         }
 
         let editButton = makeActionRow(
-            title: "Редактировать",
-            systemImage: "square.and.pencil",
+            title: L10n.actionEdit,
+            assetImageName: "edit",
             tintColor: .black,
             action: #selector(didTapEditAction)
         )
 
         let shareButton = makeActionRow(
-            title: "Поделиться",
-            systemImage: "square.and.arrow.up",
+            title: L10n.actionShare,
+            assetImageName: "export",
             tintColor: .black,
             action: #selector(didTapShareAction)
         )
 
         let deleteButton = makeActionRow(
-            title: "Удалить",
-            systemImage: "trash",
+            title: L10n.actionDelete,
+            assetImageName: "trash",
             tintColor: .systemRed,
             action: #selector(didTapDeleteAction)
         )
@@ -334,6 +362,118 @@ private extension TaskListViewController {
             self.focusedCardView.transform = .identity
             self.actionsContainerView.transform = .identity
         }
+    }
+
+    func requestSpeechAuthorization() {
+        SFSpeechRecognizer.requestAuthorization { [weak self] speechStatus in
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    let enabled = (speechStatus == .authorized) && granted
+                    self?.isVoiceSearchAvailable = enabled
+                    self?.updateVoiceSearchIcon()
+                }
+            }
+        }
+    }
+
+    func updateVoiceSearchIcon() {
+        let imageName = isVoiceSearchActive ? "stop.fill" : "mic.fill"
+        let tintColor: UIColor
+
+        if isVoiceSearchAvailable == false {
+            tintColor = AppColors.tertiaryText.withAlphaComponent(0.4)
+        } else if isVoiceSearchActive {
+            tintColor = .systemRed
+        } else {
+            tintColor = AppColors.tertiaryText
+        }
+
+        let image = UIImage(systemName: imageName)?.withTintColor(tintColor, renderingMode: .alwaysOriginal)
+        searchBar.setImage(image, for: .bookmark, state: .normal)
+    }
+
+    func startVoiceRecognition() {
+        guard isVoiceSearchAvailable else {
+            showError(L10n.voiceSearchPermissionDenied)
+            return
+        }
+
+        guard let speechRecognizer, speechRecognizer.isAvailable else {
+            showError(L10n.voiceSearchUnavailable)
+            return
+        }
+
+        recognitionTask?.cancel()
+        recognitionTask = nil
+
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            showError(L10n.voiceSearchAudioSessionFailed)
+            return
+        }
+
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        if #available(iOS 13.0, *) {
+            request.requiresOnDeviceRecognition = false
+        }
+        recognitionRequest = request
+
+        let inputNode = audioEngine.inputNode
+        inputNode.removeTap(onBus: 0)
+
+        recognitionTask = speechRecognizer.recognitionTask(with: request) { [weak self] result, error in
+            guard let self else { return }
+
+            if let result = result {
+                let recognizedText = result.bestTranscription.formattedString
+                self.searchBar.text = recognizedText
+                self.presenter?.didSearch(text: recognizedText)
+            }
+
+            let isFinal = result?.isFinal ?? false
+            if error != nil || isFinal {
+                self.stopVoiceRecognition()
+            }
+        }
+
+        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
+            self?.recognitionRequest?.append(buffer)
+        }
+
+        audioEngine.prepare()
+
+        do {
+            try audioEngine.start()
+            isVoiceSearchActive = true
+            updateVoiceSearchIcon()
+        } catch {
+            stopVoiceRecognition()
+            showError(L10n.voiceSearchStartFailed)
+        }
+    }
+
+    func stopVoiceRecognition() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+
+        audioEngine.inputNode.removeTap(onBus: 0)
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+
+        recognitionRequest = nil
+        recognitionTask = nil
+        isVoiceSearchActive = false
+        updateVoiceSearchIcon()
+
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch { }
     }
 
     @objc func hideFocusedMenu() {
@@ -379,17 +519,14 @@ private extension TaskListViewController {
         presenter?.didTapAdd()
     }
 
-    func pluralizedTasks(_ count: Int) -> String {
-        let remainder10 = count % 10
-        let remainder100 = count % 100
+    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
 
-        if remainder10 == 1 && remainder100 != 11 {
-            return "Задача"
-        } else if (2...4).contains(remainder10) && !(12...14).contains(remainder100) {
-            return "Задачи"
-        } else {
-            return "Задач"
-        }
+        let location = gesture.location(in: tableView)
+        guard let indexPath = tableView.indexPathForRow(at: location) else { return }
+
+        tableView.deselectRow(at: indexPath, animated: false)
+        showFocusedMenu(for: indexPath.row)
     }
 }
 
@@ -404,8 +541,8 @@ extension TaskListViewController: TaskListViewProtocol {
     }
 
     func showError(_ message: String) {
-        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(title: L10n.errorTitle, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: L10n.ok, style: .default))
         present(alert, animated: true)
     }
 }
@@ -429,7 +566,7 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
-        showFocusedMenu(for: indexPath.row)
+        presenter?.didToggleStatus(at: indexPath.row)
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -438,12 +575,12 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .destructive, title: "Удалить") { [weak self] _, _, completion in
+        let deleteAction = UIContextualAction(style: .destructive, title: L10n.actionDelete) { [weak self] _, _, completion in
             self?.presenter?.didDeleteItem(at: indexPath.row)
             completion(true)
         }
 
-        let toggleTitle = items[indexPath.row].isCompleted ? "Вернуть" : "Готово"
+        let toggleTitle = items[indexPath.row].isCompleted ? L10n.actionRestore : L10n.actionDone
         let toggleAction = UIContextualAction(style: .normal, title: toggleTitle) { [weak self] _, _, completion in
             self?.presenter?.didToggleStatus(at: indexPath.row)
             completion(true)
@@ -456,8 +593,28 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-extension TaskListViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        presenter?.didSearch(text: searchController.searchBar.text ?? "")
+extension TaskListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter?.didSearch(text: searchText)
+    }
+
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+    }
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+
+    func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
+        if isVoiceSearchActive {
+            stopVoiceRecognition()
+        } else {
+            startVoiceRecognition()
+        }
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        stopVoiceRecognition()
     }
 }
