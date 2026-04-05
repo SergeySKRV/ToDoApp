@@ -17,7 +17,7 @@
 /* MARK: - Task Details */
 "task.details.createTitle" = "Новая задача";
 "task.details.editTitle" = "Редактирование";
-"task.details.error.enterTitle" = "Введите заголовок задачи";
+"task.details.error.enterTitle" = "Введите название задачи";
 "task.details.placeholder.title" = "Заголовок";
 "task.details.placeholder.description" = "Описание";
 

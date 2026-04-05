@@ -11,9 +11,12 @@ final class TaskListInteractor: TaskListInteractorProtocol {
     weak var output: TaskListInteractorOutput?
 
     private let repository: TodoRepositoryProtocol
-    private let firstLaunchLoader: FirstLaunchLoader
+    private let firstLaunchLoader: FirstLaunchLoaderProtocol
 
-    init(repository: TodoRepositoryProtocol, firstLaunchLoader: FirstLaunchLoader) {
+    init(
+        repository: TodoRepositoryProtocol,
+        firstLaunchLoader: FirstLaunchLoaderProtocol
+    ) {
         self.repository = repository
         self.firstLaunchLoader = firstLaunchLoader
     }
@@ -63,12 +66,37 @@ final class TaskListInteractor: TaskListInteractorProtocol {
     }
 
     func toggleTodo(id: UUID) {
-        repository.toggle(id: id) { [weak self] result in
+        repository.fetchAll { [weak self] result in
             switch result {
-            case .success:
-                self?.loadTodos()
             case .failure(let error):
                 self?.output?.didFail(with: error)
+
+            case .success(let todos):
+                guard let current = todos.first(where: { $0.id == id }) else {
+                    self?.output?.didFail(with: AppError.objectNotFound)
+                    return
+                }
+
+                let updated = TodoModel(
+                    id: current.id,
+                    remoteID: current.remoteID,
+                    title: current.title,
+                    taskDescription: current.taskDescription,
+                    createdAt: current.createdAt,
+                    updatedAt: Date(),
+                    isCompleted: !current.isCompleted,
+                    userId: current.userId,
+                    isImported: current.isImported
+                )
+
+                self?.repository.update(updated) { updateResult in
+                    switch updateResult {
+                    case .success:
+                        self?.loadTodos()
+                    case .failure(let error):
+                        self?.output?.didFail(with: error)
+                    }
+                }
             }
         }
     }
