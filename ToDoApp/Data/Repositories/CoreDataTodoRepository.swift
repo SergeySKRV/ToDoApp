@@ -11,24 +11,24 @@ import Foundation
 final class CoreDataTodoRepository: TodoRepositoryProtocol {
     private let stack: CoreDataStack
     private let dateProvider: DateProviderProtocol
-    
-    init(stack: CoreDataStack = .shared,
-         dateProvider: DateProviderProtocol = DefaultDateProvider()) {
+
+    init(
+        stack: CoreDataStack = .shared,
+        dateProvider: DateProviderProtocol = DefaultDateProvider()
+    ) {
         self.stack = stack
         self.dateProvider = dateProvider
     }
-    
+
     func fetchAll(completion: @escaping (Result<[TodoModel], Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
-                request.sortDescriptors = [
-                    NSSortDescriptor(key: "createdAt", ascending: false)
-                ]
-                
+                request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+
                 let items = try context.fetch(request)
                 let models = items.map { self.mapToDomain($0) }
-                
+
                 DispatchQueue.main.async {
                     completion(.success(models))
                 }
@@ -39,27 +39,25 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
     func search(query: String, completion: @escaping (Result<[TodoModel], Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
-                
+
                 let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
-                request.sortDescriptors = [
-                    NSSortDescriptor(key: "createdAt", ascending: false)
-                ]
-                
-                if trimmedQuery.isEmpty == false {
+                request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+
+                if !trimmedQuery.isEmpty {
                     request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
                         NSPredicate(format: "title CONTAINS[cd] %@", trimmedQuery),
                         NSPredicate(format: "taskDescription CONTAINS[cd] %@", trimmedQuery)
                     ])
                 }
-                
+
                 let items = try context.fetch(request)
                 let models = items.map { self.mapToDomain($0) }
-                
+
                 DispatchQueue.main.async {
                     completion(.success(models))
                 }
@@ -70,7 +68,7 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
     func create(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
@@ -84,9 +82,9 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
                 item.isCompleted = false
                 item.userId = 0
                 item.isImported = false
-                
+
                 try context.save()
-                
+
                 DispatchQueue.main.async {
                     completion(.success(()))
                 }
@@ -97,21 +95,21 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
     func update(_ todo: TodoModel, completion: @escaping (Result<Void, Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "id == %@", todo.id as CVarArg)
-                
+
                 guard let item = try context.fetch(request).first else {
                     DispatchQueue.main.async {
                         completion(.failure(AppError.objectNotFound))
                     }
                     return
                 }
-                
+
                 item.title = todo.title
                 item.taskDescription = todo.taskDescription
                 item.isCompleted = todo.isCompleted
@@ -119,9 +117,9 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
                 item.remoteID = Int64(todo.remoteID ?? 0)
                 item.userId = Int64(todo.userId ?? 0)
                 item.isImported = todo.isImported
-                
+
                 try context.save()
-                
+
                 DispatchQueue.main.async {
                     completion(.success(()))
                 }
@@ -132,24 +130,24 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
     func delete(id: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-                
+
                 guard let item = try context.fetch(request).first else {
                     DispatchQueue.main.async {
                         completion(.failure(AppError.objectNotFound))
                     }
                     return
                 }
-                
+
                 context.delete(item)
                 try context.save()
-                
+
                 DispatchQueue.main.async {
                     completion(.success(()))
                 }
@@ -160,16 +158,47 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
+    func toggle(id: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        stack.performBackgroundTask { context in
+            do {
+                let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+                guard let item = try context.fetch(request).first else {
+                    DispatchQueue.main.async {
+                        completion(.failure(AppError.objectNotFound))
+                    }
+                    return
+                }
+
+                item.isCompleted.toggle()
+                item.updatedAt = self.dateProvider.now
+
+                try context.save()
+
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(AppError.persistenceFailed(error.localizedDescription)))
+                }
+            }
+        }
+    }
+
     func saveImported(_ todos: [TodoDTO], completion: @escaping (Result<Void, Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 for dto in todos {
                     let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
                     request.fetchLimit = 1
-                    request.predicate = NSPredicate(format: "remoteID == %11d", dto.id)
-                    
+                    request.predicate = NSPredicate(format: "remoteID == %@", NSNumber(value: dto.id))
+
                     let existingItem = try context.fetch(request).first
+
                     if let existingItem {
                         existingItem.title = dto.todo
                         existingItem.isCompleted = dto.completed
@@ -188,10 +217,11 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
                         item.isImported = true
                     }
                 }
+
                 if context.hasChanges {
                     try context.save()
                 }
-                
+
                 DispatchQueue.main.async {
                     completion(.success(()))
                 }
@@ -202,13 +232,13 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-    
+
     func isEmpty(completion: @escaping (Result<Bool, Error>) -> Void) {
         stack.performBackgroundTask { context in
             do {
                 let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
                 let count = try context.count(for: request)
-                
+
                 DispatchQueue.main.async {
                     completion(.success(count == 0))
                 }
@@ -220,7 +250,6 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
         }
     }
 }
-
 
 private extension CoreDataTodoRepository {
     func mapToDomain(_ item: TodoItem) -> TodoModel {
@@ -234,6 +263,6 @@ private extension CoreDataTodoRepository {
             isCompleted: item.isCompleted,
             userId: item.userId == 0 ? nil : Int(item.userId),
             isImported: item.isImported
-            )
+        )
     }
 }

@@ -13,6 +13,7 @@ protocol TodoRepositoryProtocol {
     func create(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void)
     func update(_ todo: TodoModel, completion: @escaping (Result<Void, Error>) -> Void)
     func delete(id: UUID, completion: @escaping (Result<Void, Error>) -> Void)
+    func toggle(id: UUID, completion: @escaping (Result<Void, Error>) -> Void)
     func saveImported(_ todos: [TodoDTO], completion: @escaping (Result<Void, Error>) -> Void)
     func isEmpty(completion: @escaping (Result<Bool, Error>) -> Void)
 }

@@ -1,0 +1,52 @@
+/*
+  Localizable.strings
+  ToDoApp
+
+  Created by Сергей Скориков on 04.04.2026.
+*/
+
+/* MARK: - Common */
+"common.back" = "Back";
+"common.ok" = "OK";
+
+/* MARK: - Task List */
+"tasks.title" = "Tasks";
+"search.placeholder" = "Search";
+"tasks.count" = "%#@tasks@";
+
+/* MARK: - Task Details */
+"task.details.createTitle" = "New Task";
+"task.details.editTitle" = "Edit";
+"task.details.error.enterTitle" = "Enter a task title";
+"task.details.placeholder.title" = "Title";
+"task.details.placeholder.description" = "Description";
+
+/* MARK: - Task Content */
+"task.withoutDescription" = "Without description";
+"task.status.completed" = "Completed";
+"task.status.notCompleted" = "Not completed";
+
+/* MARK: - Task Actions */
+"task.action.edit" = "Edit";
+"task.action.share" = "Share";
+"task.action.delete" = "Delete";
+"task.action.done" = "Done";
+"task.action.restore" = "Restore";
+
+/* MARK: - Errors */
+"error.title" = "Error";
+"error.invalidURL" = "Invalid URL";
+"error.noData" = "No data";
+"error.decodingFailed" = "Failed to decode data";
+"error.objectNotFound" = "Object not found";
+"error.persistenceFailed.format" = "Persistence error: %@";
+"error.networkFailed.format" = "Network error: %@";
+
+/* MARK: - Network */
+"network.incorrectResponse" = "Incorrect server response";
+
+/* MARK: - Voice Search */
+"voiceSearch.permissionDenied" = "No access to microphone or speech recognition";
+"voiceSearch.unavailable" = "Voice search is currently unavailable";
+"voiceSearch.audioSessionFailed" = "Failed to configure audio session";
+"voiceSearch.startFailed" = "Failed to start speech recognition";
