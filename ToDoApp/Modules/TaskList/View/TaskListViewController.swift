@@ -20,7 +20,9 @@ final class TaskListViewController: UIViewController {
     }
 
     private let titleLabel = UILabel()
-    private let searchBar = UISearchBar()
+    private let searchContainerView = UIView()
+    private let searchTextField = UITextField()
+    private let voiceSearchButton = UIButton(type: .system)
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
 
@@ -69,7 +71,7 @@ final class TaskListViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        bottomBarHeightConstraint?.constant = 50 + view.safeAreaInsets.bottom
+        bottomBarHeightConstraint?.constant = 49 + view.safeAreaInsets.bottom
     }
 }
 
@@ -78,31 +80,31 @@ private extension TaskListViewController {
         view.backgroundColor = AppColors.background
 
         setupTitleLabel()
-        setupSearchBar()
+        setupSearchField()
         setupTableView()
         setupBottomBar()
         setupOverlayUI()
 
         view.addSubview(titleLabel)
-        view.addSubview(searchBar)
+        view.addSubview(searchContainerView)
         view.addSubview(tableView)
         view.addSubview(bottomBarView)
         view.addSubview(overlayView)
 
-        bottomBarHeightConstraint = bottomBarView.heightAnchor.constraint(equalToConstant: 50)
+        bottomBarHeightConstraint = bottomBarView.heightAnchor.constraint(equalToConstant: 49)
         bottomBarHeightConstraint?.isActive = true
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            searchBar.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
-            searchBar.heightAnchor.constraint(equalToConstant: 56),
+            searchContainerView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            searchContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            searchContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            searchContainerView.heightAnchor.constraint(equalToConstant: 36),
 
-            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4),
+            tableView.topAnchor.constraint(equalTo: searchContainerView.bottomAnchor, constant: 16),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor),
@@ -125,35 +127,58 @@ private extension TaskListViewController {
         titleLabel.textColor = AppColors.primaryText
     }
 
-    func setupSearchBar() {
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.delegate = self
-        searchBar.searchBarStyle = .minimal
-        searchBar.placeholder = L10n.searchPlaceholder
-        searchBar.showsCancelButton = false
-        searchBar.showsBookmarkButton = true
-        searchBar.backgroundColor = AppColors.background
-        searchBar.barTintColor = AppColors.background
-        searchBar.tintColor = AppColors.tertiaryText
-        searchBar.setImage(UIImage(systemName: "magnifyingglass"), for: .search, state: .normal)
+    func setupSearchField() {
+        searchContainerView.translatesAutoresizingMaskIntoConstraints = false
+        searchContainerView.backgroundColor = AppColors.searchBackground
+        searchContainerView.layer.cornerRadius = 10
+        searchContainerView.layer.masksToBounds = true
 
-        let textField = searchBar.searchTextField
-        textField.backgroundColor = AppColors.searchBackground
-        textField.textColor = AppColors.primaryText
-        textField.tintColor = AppColors.primaryText
-        textField.font = .systemFont(ofSize: 17, weight: .regular)
-        textField.leftView?.tintColor = AppColors.tertiaryText
-        textField.clearButtonMode = .whileEditing
-        textField.borderStyle = .none
-        textField.layer.cornerRadius = 10
-        textField.clipsToBounds = true
-        textField.attributedPlaceholder = NSAttributedString(
+        let searchIconView = UIImageView(image: UIImage(systemName: "magnifyingglass"))
+        searchIconView.tintColor = AppColors.tertiaryText
+        searchIconView.contentMode = .scaleAspectFit
+        searchIconView.translatesAutoresizingMaskIntoConstraints = false
+
+        searchTextField.translatesAutoresizingMaskIntoConstraints = false
+        searchTextField.delegate = self
+        searchTextField.backgroundColor = .clear
+        searchTextField.textColor = AppColors.primaryText
+        searchTextField.tintColor = AppColors.primaryText
+        searchTextField.font = .systemFont(ofSize: 17, weight: .regular)
+        searchTextField.clearButtonMode = .whileEditing
+        searchTextField.returnKeyType = .search
+        searchTextField.attributedPlaceholder = NSAttributedString(
             string: L10n.searchPlaceholder,
             attributes: [
                 .foregroundColor: AppColors.tertiaryText,
                 .font: UIFont.systemFont(ofSize: 17, weight: .regular)
             ]
         )
+        searchTextField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: .editingChanged)
+
+        voiceSearchButton.translatesAutoresizingMaskIntoConstraints = false
+        voiceSearchButton.tintColor = AppColors.tertiaryText
+        voiceSearchButton.addTarget(self, action: #selector(didTapVoiceSearch), for: .touchUpInside)
+
+        searchContainerView.addSubview(searchIconView)
+        searchContainerView.addSubview(searchTextField)
+        searchContainerView.addSubview(voiceSearchButton)
+
+        NSLayoutConstraint.activate([
+            searchIconView.leadingAnchor.constraint(equalTo: searchContainerView.leadingAnchor, constant: 12),
+            searchIconView.centerYAnchor.constraint(equalTo: searchContainerView.centerYAnchor),
+            searchIconView.widthAnchor.constraint(equalToConstant: 16),
+            searchIconView.heightAnchor.constraint(equalToConstant: 16),
+
+            voiceSearchButton.trailingAnchor.constraint(equalTo: searchContainerView.trailingAnchor, constant: -10),
+            voiceSearchButton.centerYAnchor.constraint(equalTo: searchContainerView.centerYAnchor),
+            voiceSearchButton.widthAnchor.constraint(equalToConstant: 24),
+            voiceSearchButton.heightAnchor.constraint(equalToConstant: 24),
+
+            searchTextField.leadingAnchor.constraint(equalTo: searchIconView.trailingAnchor, constant: 8),
+            searchTextField.trailingAnchor.constraint(equalTo: voiceSearchButton.leadingAnchor, constant: -8),
+            searchTextField.topAnchor.constraint(equalTo: searchContainerView.topAnchor),
+            searchTextField.bottomAnchor.constraint(equalTo: searchContainerView.bottomAnchor)
+        ])
 
         updateVoiceSearchIcon()
     }
@@ -279,8 +304,8 @@ private extension TaskListViewController {
             cardStack.bottomAnchor.constraint(equalTo: focusedCardView.bottomAnchor, constant: -16),
 
             actionsContainerView.topAnchor.constraint(equalTo: focusedCardView.bottomAnchor, constant: 16),
-            actionsContainerView.leadingAnchor.constraint(equalTo: overlayView.leadingAnchor, constant: 56),
-            actionsContainerView.trailingAnchor.constraint(equalTo: overlayView.trailingAnchor, constant: -56)
+            actionsContainerView.leadingAnchor.constraint(equalTo: overlayView.leadingAnchor, constant: 53),
+            actionsContainerView.trailingAnchor.constraint(equalTo: overlayView.trailingAnchor, constant: -53)
         ])
 
         let dismissTap = UITapGestureRecognizer(target: self, action: #selector(hideFocusedMenu))
@@ -292,7 +317,7 @@ private extension TaskListViewController {
 
     func makeActionRow(title: String, assetImageName: String, tintColor: UIColor, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
-        button.backgroundColor = AppColors.actionMenuBackground
+        button.backgroundColor = .clear
 
         var config = UIButton.Configuration.plain()
         var attributes = AttributeContainer()
@@ -348,7 +373,21 @@ private extension TaskListViewController {
             action: #selector(didTapDeleteAction)
         )
 
-        [editButton, shareButton, deleteButton].forEach { actionsContainerView.addArrangedSubview($0) }
+        let buttons = [editButton, shareButton, deleteButton]
+
+        for (index, button) in buttons.enumerated() {
+            actionsContainerView.addArrangedSubview(button)
+
+            if index < buttons.count - 1 {
+                let separator = UIView()
+                separator.translatesAutoresizingMaskIntoConstraints = false
+                separator.backgroundColor = UIColor.black.withAlphaComponent(0.28)
+                NSLayoutConstraint.activate([
+                    separator.heightAnchor.constraint(equalToConstant: 1 / UIScreen.main.scale)
+                ])
+                actionsContainerView.addArrangedSubview(separator)
+            }
+        }
 
         overlayView.isHidden = false
         overlayView.alpha = 0
@@ -388,8 +427,9 @@ private extension TaskListViewController {
             tintColor = AppColors.tertiaryText
         }
 
-        let image = UIImage(systemName: imageName)?.withTintColor(tintColor, renderingMode: .alwaysOriginal)
-        searchBar.setImage(image, for: .bookmark, state: .normal)
+        let image = UIImage(systemName: imageName)
+        voiceSearchButton.setImage(image, for: .normal)
+        voiceSearchButton.tintColor = tintColor
     }
 
     func startVoiceRecognition() {
@@ -430,7 +470,7 @@ private extension TaskListViewController {
 
             if let result = result {
                 let recognizedText = result.bestTranscription.formattedString
-                self.searchBar.text = recognizedText
+                self.searchTextField.text = recognizedText
                 self.presenter?.didSearch(text: recognizedText)
             }
 
@@ -474,6 +514,18 @@ private extension TaskListViewController {
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         } catch { }
+    }
+
+    @objc func searchTextDidChange(_ textField: UITextField) {
+        presenter?.didSearch(text: textField.text ?? "")
+    }
+
+    @objc func didTapVoiceSearch() {
+        if isVoiceSearchActive {
+            stopVoiceRecognition()
+        } else {
+            startVoiceRecognition()
+        }
     }
 
     @objc func hideFocusedMenu() {
@@ -593,28 +645,15 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-extension TaskListViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter?.didSearch(text: searchText)
+extension TaskListViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        presenter?.didSearch(text: textField.text ?? "")
+        return true
     }
 
-    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        searchBar.showsCancelButton = false
-    }
-
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-    }
-
-    func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
-        if isVoiceSearchActive {
-            stopVoiceRecognition()
-        } else {
-            startVoiceRecognition()
-        }
-    }
-
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        stopVoiceRecognition()
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        presenter?.didSearch(text: "")
+        return true
     }
 }

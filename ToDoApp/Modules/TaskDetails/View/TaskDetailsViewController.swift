@@ -18,6 +18,9 @@ final class TaskDetailsViewController: UIViewController {
     private let descriptionTextView = UITextView()
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
 
+    private let titlePlaceholderLabel = UILabel()
+    private let descriptionPlaceholderLabel = UILabel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -33,7 +36,6 @@ final class TaskDetailsViewController: UIViewController {
 private extension TaskDetailsViewController {
     func setupUI() {
         view.backgroundColor = AppColors.background
-
         navigationItem.largeTitleDisplayMode = .never
 
         let backButton = UIButton(type: .system)
@@ -46,7 +48,6 @@ private extension TaskDetailsViewController {
         backButton.contentHorizontalAlignment = .leading
         backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
         backButton.sizeToFit()
-
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)
 
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -56,39 +57,21 @@ private extension TaskDetailsViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
 
-        titleTextView.translatesAutoresizingMaskIntoConstraints = false
-        titleTextView.backgroundColor = .clear
-        titleTextView.textColor = AppColors.primaryText
-        titleTextView.tintColor = AppColors.primaryText
-        titleTextView.font = .systemFont(ofSize: 34, weight: .bold)
-        titleTextView.isScrollEnabled = false
-        titleTextView.textContainerInset = .zero
-        titleTextView.textContainer.lineFragmentPadding = 0
-        titleTextView.autocapitalizationType = .sentences
-        titleTextView.returnKeyType = .default
-
-        dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        dateLabel.textColor = AppColors.tertiaryText
-        dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
-        dateLabel.numberOfLines = 1
-
-        descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
-        descriptionTextView.backgroundColor = .clear
-        descriptionTextView.textColor = AppColors.primaryText
-        descriptionTextView.tintColor = AppColors.primaryText
-        descriptionTextView.font = .systemFont(ofSize: 16, weight: .regular)
-        descriptionTextView.isScrollEnabled = false
-        descriptionTextView.textContainerInset = .zero
-        descriptionTextView.textContainer.lineFragmentPadding = 0
-        descriptionTextView.autocapitalizationType = .sentences
+        setupTitleTextView()
+        setupDateLabel()
+        setupDescriptionTextView()
+        setupPlaceholders()
 
         view.addSubview(scrollView)
         view.addSubview(activityIndicator)
-        scrollView.addSubview(contentView)
 
+        scrollView.addSubview(contentView)
         contentView.addSubview(titleTextView)
         contentView.addSubview(dateLabel)
         contentView.addSubview(descriptionTextView)
+
+        titleTextView.addSubview(titlePlaceholderLabel)
+        descriptionTextView.addSubview(descriptionPlaceholderLabel)
 
         NSLayoutConstraint.activate([
             activityIndicator.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -118,8 +101,71 @@ private extension TaskDetailsViewController {
             descriptionTextView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             descriptionTextView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             descriptionTextView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
-            descriptionTextView.heightAnchor.constraint(greaterThanOrEqualToConstant: 240)
+            descriptionTextView.heightAnchor.constraint(greaterThanOrEqualToConstant: 240),
+
+            titlePlaceholderLabel.topAnchor.constraint(equalTo: titleTextView.topAnchor),
+            titlePlaceholderLabel.leadingAnchor.constraint(equalTo: titleTextView.leadingAnchor, constant: 5),
+            titlePlaceholderLabel.trailingAnchor.constraint(lessThanOrEqualTo: titleTextView.trailingAnchor),
+
+            descriptionPlaceholderLabel.topAnchor.constraint(equalTo: descriptionTextView.topAnchor),
+            descriptionPlaceholderLabel.leadingAnchor.constraint(equalTo: descriptionTextView.leadingAnchor, constant: 5),
+            descriptionPlaceholderLabel.trailingAnchor.constraint(lessThanOrEqualTo: descriptionTextView.trailingAnchor)
         ])
+    }
+
+    func setupTitleTextView() {
+        titleTextView.translatesAutoresizingMaskIntoConstraints = false
+        titleTextView.backgroundColor = .clear
+        titleTextView.textColor = AppColors.primaryText
+        titleTextView.tintColor = AppColors.primaryText
+        titleTextView.font = .systemFont(ofSize: 34, weight: .bold)
+        titleTextView.isScrollEnabled = false
+        titleTextView.textContainerInset = .zero
+        titleTextView.textContainer.lineFragmentPadding = 0
+        titleTextView.autocapitalizationType = .sentences
+        titleTextView.returnKeyType = .default
+        titleTextView.delegate = self
+    }
+
+    func setupDateLabel() {
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        dateLabel.textColor = AppColors.tertiaryText
+        dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        dateLabel.numberOfLines = 1
+    }
+
+    func setupDescriptionTextView() {
+        descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
+        descriptionTextView.backgroundColor = .clear
+        descriptionTextView.textColor = AppColors.primaryText
+        descriptionTextView.tintColor = AppColors.primaryText
+        descriptionTextView.font = .systemFont(ofSize: 16, weight: .regular)
+        descriptionTextView.isScrollEnabled = false
+        descriptionTextView.textContainerInset = .zero
+        descriptionTextView.textContainer.lineFragmentPadding = 0
+        descriptionTextView.autocapitalizationType = .sentences
+        descriptionTextView.delegate = self
+    }
+
+    func setupPlaceholders() {
+        titlePlaceholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        titlePlaceholderLabel.text = L10n.taskTitlePlaceholder
+        titlePlaceholderLabel.textColor = AppColors.tertiaryText
+        titlePlaceholderLabel.font = .systemFont(ofSize: 34, weight: .bold)
+        titlePlaceholderLabel.numberOfLines = 1
+        titlePlaceholderLabel.isUserInteractionEnabled = false
+
+        descriptionPlaceholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        descriptionPlaceholderLabel.text = L10n.taskDescriptionPlaceholder
+        descriptionPlaceholderLabel.textColor = AppColors.tertiaryText
+        descriptionPlaceholderLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        descriptionPlaceholderLabel.numberOfLines = 1
+        descriptionPlaceholderLabel.isUserInteractionEnabled = false
+    }
+
+    func updatePlaceholdersVisibility() {
+        titlePlaceholderLabel.isHidden = !titleTextView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        descriptionPlaceholderLabel.isHidden = !descriptionTextView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     @objc func didTapBack() {
@@ -132,17 +178,13 @@ private extension TaskDetailsViewController {
 }
 
 extension TaskDetailsViewController: TaskDetailsViewProtocol {
-    func display(
-        title: String,
-        description: String,
-        screenTitle: String,
-        dateText: String?
-    ) {
+    func display(title: String, description: String, screenTitle: String, dateText: String?) {
         self.title = screenTitle
         titleTextView.text = title
         descriptionTextView.text = description
         dateLabel.text = dateText
-        dateLabel.isHidden = (dateText == nil)
+        dateLabel.isHidden = dateText == nil
+        updatePlaceholdersVisibility()
     }
 
     func showLoading(_ isLoading: Bool) {
@@ -158,8 +200,18 @@ extension TaskDetailsViewController: TaskDetailsViewProtocol {
     }
 
     func showError(_ message: String) {
-        let alert = UIAlertController(title: L10n.errorTitle, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: L10n.errorTitle,
+            message: message,
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: L10n.ok, style: .default))
         present(alert, animated: true)
+    }
+}
+
+extension TaskDetailsViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        updatePlaceholdersVisibility()
     }
 }

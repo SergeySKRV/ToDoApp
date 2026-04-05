@@ -1,54 +1,58 @@
+//
+//  TaskListPresenter.swift
+//  ToDoApp
+//
+//  Created by Сергей Скориков on 02.04.2026.
+//
+
 import Foundation
 
 final class TaskListPresenter: TaskListPresenterProtocol {
     weak var view: TaskListViewProtocol?
     var interactor: TaskListInteractorProtocol?
     var router: TaskListRouterProtocol?
-    
+
     private var todos: [TodoModel] = []
-    
+
     func viewDidLoad() {
-        refreshTodos()
+        view?.showLoading(true)
+        interactor?.preloadTodosIfNeeded()
     }
 
     func viewWillAppear() {
-        refreshTodos()
-    }
-    
-    private func refreshTodos() {
         view?.showLoading(true)
         interactor?.loadTodos()
     }
-    
+
     func didTapAdd() {
         router?.openCreate()
     }
-    
+
     func didSelectItem(at index: Int) {
         guard todos.indices.contains(index) else { return }
         router?.openEdit(todo: todos[index])
     }
-    
+
     func didDeleteItem(at index: Int) {
         guard todos.indices.contains(index) else { return }
         interactor?.deleteTodo(id: todos[index].id)
     }
-    
+
     func didSearch(text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if trimmed.isEmpty {
             interactor?.loadTodos()
         } else {
             interactor?.search(query: trimmed)
         }
     }
-    
+
     func didToggleStatus(at index: Int) {
         guard todos.indices.contains(index) else { return }
         interactor?.toggleTodo(id: todos[index].id)
     }
-    
+
     private func map(_ todos: [TodoModel]) -> [TaskListCellViewModel] {
         todos.map {
             TaskListCellViewModel(
@@ -69,7 +73,7 @@ extension TaskListPresenter: TaskListInteractorOutput {
         view?.showLoading(false)
         view?.showTodos(map(todos))
     }
-    
+
     func didFail(with error: Error) {
         view?.showLoading(false)
         view?.showError(error.localizedDescription)

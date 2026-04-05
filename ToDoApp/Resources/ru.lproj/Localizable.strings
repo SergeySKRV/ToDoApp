@@ -5,32 +5,35 @@
   Created by Сергей Скориков on 04.04.2026.
 */
 
-/// MARK: - Common
+/* MARK: - Common */
 "common.back" = "Назад";
 "common.ok" = "OK";
 
-/// MARK: - Task List
+/* MARK: - Task List */
 "tasks.title" = "Задачи";
 "search.placeholder" = "Поиск";
+"tasks.count" = "%#@tasks@";
 
-/// MARK: - Task Details
+/* MARK: - Task Details */
 "task.details.createTitle" = "Новая задача";
-"task.details.editTitle" = "Редактировать";
-"task.details.error.enterTitle" = "Введите название задачи";
+"task.details.editTitle" = "Редактирование";
+"task.details.error.enterTitle" = "Введите заголовок задачи";
+"task.details.placeholder.title" = "Заголовок";
+"task.details.placeholder.description" = "Описание";
 
-/// MARK: - Task Content
+/* MARK: - Task Content */
 "task.withoutDescription" = "Без описания";
-"task.status.completed" = "Выполнено";
-"task.status.notCompleted" = "Не выполнено";
+"task.status.completed" = "Выполнена";
+"task.status.notCompleted" = "Не выполнена";
 
-/// MARK: - Task Actions
+/* MARK: - Task Actions */
 "task.action.edit" = "Редактировать";
 "task.action.share" = "Поделиться";
 "task.action.delete" = "Удалить";
 "task.action.done" = "Готово";
 "task.action.restore" = "Вернуть";
 
-/// MARK: - Errors
+/* MARK: - Errors */
 "error.title" = "Ошибка";
 "error.invalidURL" = "Некорректный URL";
 "error.noData" = "Нет данных";
@@ -39,10 +42,10 @@
 "error.persistenceFailed.format" = "Ошибка сохранения: %@";
 "error.networkFailed.format" = "Ошибка сети: %@";
 
-/// MARK: - Network
+/* MARK: - Network */
 "network.incorrectResponse" = "Некорректный ответ сервера";
 
-/// MARK: - Voice Search
+/* MARK: - Voice Search */
 "voiceSearch.permissionDenied" = "Нет доступа к микрофону или распознаванию речи";
 "voiceSearch.unavailable" = "Голосовой поиск сейчас недоступен";
 "voiceSearch.audioSessionFailed" = "Не удалось настроить аудиосессию";
