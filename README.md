@@ -47,6 +47,7 @@ ToDoApp — тестовое iOS-приложение для ведения сп
 
 ## Структура проекта
 
+```text
 ToDoApp/
 ├── App/
 │   ├── AppDelegate.swift
@@ -128,6 +129,7 @@ ToDoApp/
     ├── TaskListPresenterTests.swift
     ├── TaskListRouterTests.swift
     └── TodoAPIServiceTests.swift
+```
 
 ## Работа с данными
 
