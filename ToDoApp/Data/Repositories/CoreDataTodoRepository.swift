@@ -8,9 +8,15 @@
 import CoreData
 import Foundation
 
+/// Core Data implementation of TodoRepositoryProtocol.
 final class CoreDataTodoRepository: TodoRepositoryProtocol {
+
+    // MARK: - Properties
+
     private let stack: CoreDataStack
     private let dateProvider: DateProviderProtocol
+
+    // MARK: - Init
 
     init(
         stack: CoreDataStack = .shared,
@@ -19,6 +25,8 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
         self.stack = stack
         self.dateProvider = dateProvider
     }
+
+    // MARK: - Fetching
 
     func fetchAll(completion: @escaping (Result<[TodoModel], Error>) -> Void) {
         stack.performBackgroundTask { context in
@@ -68,6 +76,25 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
+
+    func isEmpty(completion: @escaping (Result<Bool, Error>) -> Void) {
+        stack.performBackgroundTask { context in
+            do {
+                let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
+                let count = try context.count(for: request)
+
+                DispatchQueue.main.async {
+                    completion(.success(count == 0))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(AppError.persistenceFailed(error.localizedDescription)))
+                }
+            }
+        }
+    }
+
+    // MARK: - Mutating
 
     func create(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void) {
         stack.performBackgroundTask { context in
@@ -232,26 +259,13 @@ final class CoreDataTodoRepository: TodoRepositoryProtocol {
             }
         }
     }
-
-    func isEmpty(completion: @escaping (Result<Bool, Error>) -> Void) {
-        stack.performBackgroundTask { context in
-            do {
-                let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
-                let count = try context.count(for: request)
-
-                DispatchQueue.main.async {
-                    completion(.success(count == 0))
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    completion(.failure(AppError.persistenceFailed(error.localizedDescription)))
-                }
-            }
-        }
-    }
 }
 
+// MARK: - Mapping
+
 private extension CoreDataTodoRepository {
+
+    /// Converts a TodoItem managed object to a TodoModel.
     func mapToDomain(_ item: TodoItem) -> TodoModel {
         TodoModel(
             id: item.id ?? UUID(),

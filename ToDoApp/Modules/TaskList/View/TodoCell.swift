@@ -7,7 +7,11 @@
 
 import UIKit
 
+/// Custom table view cell used to display a todo item in the task list.
 final class TodoCell: UITableViewCell {
+
+    // MARK: - Properties
+
     static let reuseIdentifier = "TodoCell"
 
     private let statusImageView = UIImageView()
@@ -16,6 +20,8 @@ final class TodoCell: UITableViewCell {
     private let descriptionLabel = UILabel()
     private let dateLabel = UILabel()
     private let dividerView = UIView()
+
+    // MARK: - Init
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -26,6 +32,8 @@ final class TodoCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Lifecycle
+
     override func prepareForReuse() {
         super.prepareForReuse()
         titleLabel.attributedText = nil
@@ -33,6 +41,8 @@ final class TodoCell: UITableViewCell {
         dateLabel.text = nil
         statusImageView.image = nil
     }
+
+    // MARK: - Configuration
 
     func configure(with viewModel: TaskListCellViewModel) {
         if viewModel.isCompleted {
@@ -78,6 +88,8 @@ final class TodoCell: UITableViewCell {
 
         dateLabel.text = viewModel.createdAtText
     }
+
+    // MARK: - Private
 
     private func setupUI() {
         backgroundColor = AppColors.background

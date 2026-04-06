@@ -7,7 +7,11 @@
 
 import Foundation
 
+/// Describes business logic actions for the task list screen.
 protocol TaskListInteractorProtocol: AnyObject {
+
+    // MARK: - Actions
+
     func preloadTodosIfNeeded()
     func loadTodos()
     func search(query: String)

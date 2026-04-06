@@ -5,11 +5,17 @@
 //  Created by Сергей Скориков on 02.04.2026.
 //
 
+/// Loads initial todo data on the first app launch.
 final class FirstLaunchLoader: FirstLaunchLoaderProtocol {
+
+    // MARK: - Properties
+
     private let repository: TodoRepositoryProtocol
     private let apiService: TodoAPIServiceProtocol
     private let store: KeyValueStoreProtocol
     private let preloadKey = "hasPreloadedTodos"
+
+    // MARK: - Init
 
     init(
         repository: TodoRepositoryProtocol,
@@ -20,6 +26,8 @@ final class FirstLaunchLoader: FirstLaunchLoaderProtocol {
         self.apiService = apiService
         self.store = store
     }
+
+    // MARK: - FirstLaunchLoaderProtocol
 
     func preloadIfNeeded(completion: @escaping (Result<Void, Error>) -> Void) {
         if store.bool(forKey: preloadKey) {

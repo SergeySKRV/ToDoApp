@@ -7,9 +7,16 @@
 
 import Foundation
 
+/// Describes user actions handled by the task list presenter.
 protocol TaskListPresenterProtocol: AnyObject {
+
+    // MARK: - Lifecycle
+
     func viewDidLoad()
     func viewWillAppear()
+
+    // MARK: - Actions
+
     func didTapAdd()
     func didSelectItem(at index: Int)
     func didDeleteItem(at index: Int)

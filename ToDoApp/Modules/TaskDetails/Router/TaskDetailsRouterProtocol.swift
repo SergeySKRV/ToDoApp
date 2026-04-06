@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Describes navigation actions for the task details screen.
 protocol TaskDetailsRouterProtocol: AnyObject {
     func close()
 }

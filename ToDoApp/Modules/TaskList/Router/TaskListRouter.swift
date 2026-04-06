@@ -7,8 +7,14 @@
 
 import UIKit
 
+/// Handles navigation from the task list screen.
 final class TaskListRouter: TaskListRouterProtocol {
+
+    // MARK: - Properties
+
     weak var viewController: UIViewController?
+
+    // MARK: - TaskListRouterProtocol
 
     func openCreate() {
         let repository = CoreDataTodoRepository(stack: .shared)

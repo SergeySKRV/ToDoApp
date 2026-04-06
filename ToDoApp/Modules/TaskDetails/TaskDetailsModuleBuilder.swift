@@ -7,9 +7,15 @@
 
 import UIKit
 
+/// Builds and wires the Task Details module components together.
 enum TaskDetailsModuleBuilder {
-    static func build(mode: TaskDetailsMode,
-                      repository: TodoRepositoryProtocol) -> UIViewController {
+
+    // MARK: - Build
+
+    static func build(
+        mode: TaskDetailsMode,
+        repository: TodoRepositoryProtocol
+    ) -> UIViewController {
         let view = TaskDetailsViewController()
         let interactor = TaskDetailsInteractor(repository: repository, mode: mode)
         let router = TaskDetailsRouter()
@@ -19,11 +25,11 @@ enum TaskDetailsModuleBuilder {
             router: router,
             mode: mode
         )
-        
+
         view.presenter = presenter
         interactor.presenter = presenter
         router.viewController = view
-        
+
         return view
     }
 }

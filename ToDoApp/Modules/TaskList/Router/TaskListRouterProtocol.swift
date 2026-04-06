@@ -7,7 +7,11 @@
 
 import UIKit
 
+/// Describes navigation actions for the task list screen.
 protocol TaskListRouterProtocol: AnyObject {
+
+    // MARK: - Navigation
+
     func openCreate()
     func openEdit(todo: TodoModel)
 }

@@ -7,7 +7,11 @@
 
 import Foundation
 
+/// Describes callbacks from the task list interactor.
 protocol TaskListInteractorOutput: AnyObject {
+
+    // MARK: - Output
+
     func didLoadTodos(_ todos: [TodoModel])
     func didFail(with error: Error)
 }

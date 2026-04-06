@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents the screen mode for task details.
 enum TaskDetailsMode {
     case create
     case edit(TodoModel)

@@ -7,11 +7,17 @@
 
 import Foundation
 
+/// Handles business logic for loading, searching, deleting, and updating todo items.
 final class TaskListInteractor: TaskListInteractorProtocol {
+
+    // MARK: - Properties
+
     weak var output: TaskListInteractorOutput?
 
     private let repository: TodoRepositoryProtocol
     private let firstLaunchLoader: FirstLaunchLoaderProtocol
+
+    // MARK: - Init
 
     init(
         repository: TodoRepositoryProtocol,
@@ -20,6 +26,8 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         self.repository = repository
         self.firstLaunchLoader = firstLaunchLoader
     }
+
+    // MARK: - TaskListInteractorProtocol
 
     func preloadTodosIfNeeded() {
         firstLaunchLoader.preloadIfNeeded { [weak self] result in

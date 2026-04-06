@@ -10,10 +10,14 @@ import XCTest
 
 final class FirstLaunchLoaderTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var repository: TodoRepositoryMock!
     private var apiService: TodoAPIServiceMock!
     private var store: KeyValueStoreMock!
     private var sut: FirstLaunchLoader!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -34,6 +38,8 @@ final class FirstLaunchLoaderTests: XCTestCase {
         repository = nil
         super.tearDown()
     }
+
+    // MARK: - Tests
 
     func test_preloadIfNeeded_whenAlreadyPreloaded_completesWithoutOtherWork() {
         store.boolResult = true
@@ -225,7 +231,10 @@ final class FirstLaunchLoaderTests: XCTestCase {
     }
 }
 
+// MARK: - TodoRepositoryMock
+
 private final class TodoRepositoryMock: TodoRepositoryProtocol {
+
     var isEmptyResult: Result<Bool, Error> = .success(true)
     var saveImportedResult: Result<Void, Error> = .success(())
 
@@ -269,7 +278,10 @@ private final class TodoRepositoryMock: TodoRepositoryProtocol {
     }
 }
 
+// MARK: - TodoAPIServiceMock
+
 private final class TodoAPIServiceMock: TodoAPIServiceProtocol {
+
     var fetchTodosResult: Result<[TodoDTO], Error> = .success([])
 
     private(set) var fetchTodosCallCount = 0
@@ -280,7 +292,10 @@ private final class TodoAPIServiceMock: TodoAPIServiceProtocol {
     }
 }
 
+// MARK: - KeyValueStoreMock
+
 private final class KeyValueStoreMock: KeyValueStoreProtocol {
+
     var boolResult = false
 
     private(set) var requestedKeys: [String] = []

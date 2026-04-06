@@ -7,13 +7,20 @@
 
 import UIKit
 
+/// Manages the app window for the current scene.
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+
+    // MARK: - Properties
 
     var window: UIWindow?
 
-    func scene(_ scene: UIScene,
-               willConnectTo session: UISceneSession,
-               options connectionOptions: UIScene.ConnectionOptions) {
+    // MARK: - UIWindowSceneDelegate
+
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         let rootViewController = TaskListModuleBuilder.build()

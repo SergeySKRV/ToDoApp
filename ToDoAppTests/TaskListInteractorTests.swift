@@ -10,10 +10,14 @@ import XCTest
 
 final class TaskListInteractorTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var repository: TodoRepositoryMock!
     private var firstLaunchLoader: FirstLaunchLoaderMock!
     private var output: TaskListInteractorOutputMock!
     private var sut: TaskListInteractor!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -31,6 +35,8 @@ final class TaskListInteractorTests: XCTestCase {
         repository = nil
         super.tearDown()
     }
+
+    // MARK: - Tests
 
     func test_preloadTodosIfNeeded_whenLoaderSucceeds_loadsTodos() {
         let todos = [makeTodo(title: "Task 1")]
@@ -302,6 +308,8 @@ final class TaskListInteractorTests: XCTestCase {
         XCTAssertEqual(output.didFailCallCount, 1)
     }
 
+    // MARK: - Helpers
+
     private func makeTodo(title: String, isCompleted: Bool = false) -> TodoModel {
         let date = Date(timeIntervalSince1970: 1_700_000_000)
 
@@ -319,7 +327,10 @@ final class TaskListInteractorTests: XCTestCase {
     }
 }
 
+// MARK: - FirstLaunchLoaderMock
+
 private final class FirstLaunchLoaderMock: FirstLaunchLoaderProtocol {
+
     var preloadResult: Result<Void, Error> = .success(())
     private(set) var preloadIfNeededCallCount = 0
 
@@ -329,7 +340,10 @@ private final class FirstLaunchLoaderMock: FirstLaunchLoaderProtocol {
     }
 }
 
+// MARK: - TaskListInteractorOutputMock
+
 private final class TaskListInteractorOutputMock: TaskListInteractorOutput {
+
     private(set) var didFailCallCount = 0
 
     var didLoadTodosHandler: (([TodoModel]) -> Void)?
@@ -345,7 +359,10 @@ private final class TaskListInteractorOutputMock: TaskListInteractorOutput {
     }
 }
 
+// MARK: - TodoRepositoryMock
+
 private final class TodoRepositoryMock: TodoRepositoryProtocol {
+
     var fetchAllResults: [Result<[TodoModel], Error>] = []
     var searchResult: Result<[TodoModel], Error> = .success([])
     var createResult: Result<Void, Error> = .success(())

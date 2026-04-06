@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Describes user-driven actions handled by the task details presenter.
 public protocol TaskDetailsPresenterProtocol: AnyObject {
     func viewDidLoad()
     func didTapSave(title: String, description: String, isCompleted: Bool)

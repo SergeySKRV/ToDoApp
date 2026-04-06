@@ -8,6 +8,9 @@
 import Foundation
 
 final class TaskDetailsPresenter {
+
+    // MARK: - Properties
+
     private weak var view: TaskDetailsViewProtocol?
     private let interactor: TaskDetailsInteractorProtocol
     private let router: TaskDetailsRouterProtocol
@@ -16,10 +19,14 @@ final class TaskDetailsPresenter {
     private var initialTitle: String = ""
     private var initialDescription: String = ""
 
-    init(view: TaskDetailsViewProtocol,
-         interactor: TaskDetailsInteractorProtocol,
-         router: TaskDetailsRouterProtocol,
-         mode: TaskDetailsMode) {
+    // MARK: - Init
+
+    init(
+        view: TaskDetailsViewProtocol,
+        interactor: TaskDetailsInteractorProtocol,
+        router: TaskDetailsRouterProtocol,
+        mode: TaskDetailsMode
+    ) {
         self.view = view
         self.interactor = interactor
         self.router = router
@@ -27,7 +34,10 @@ final class TaskDetailsPresenter {
     }
 }
 
+// MARK: - TaskDetailsPresenterProtocol
+
 extension TaskDetailsPresenter: TaskDetailsPresenterProtocol {
+
     func viewDidLoad() {
         switch mode {
         case .create:
@@ -77,7 +87,9 @@ extension TaskDetailsPresenter: TaskDetailsPresenterProtocol {
             let initialTrimmedTitle = initialTitle.trimmingCharacters(in: .whitespacesAndNewlines)
             let initialNormalizedDescription = initialDescription.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let hasChanges = trimmedTitle != initialTrimmedTitle || normalizedDescription != initialNormalizedDescription
+            let hasChanges =
+                trimmedTitle != initialTrimmedTitle ||
+                normalizedDescription != initialNormalizedDescription
 
             if hasChanges == false {
                 router.close()
@@ -85,7 +97,7 @@ extension TaskDetailsPresenter: TaskDetailsPresenterProtocol {
             }
 
             guard trimmedTitle.isEmpty == false else {
-                view?.showError("Введите название задачи")
+                view?.showError(L10n.errorEnterTaskTitle)
                 return
             }
 
@@ -102,7 +114,10 @@ extension TaskDetailsPresenter: TaskDetailsPresenterProtocol {
     }
 }
 
+// MARK: - TaskDetailsInteractorOutputProtocol
+
 extension TaskDetailsPresenter: TaskDetailsInteractorOutputProtocol {
+
     func didSaveTask() {
         view?.showLoading(false)
         router.close()

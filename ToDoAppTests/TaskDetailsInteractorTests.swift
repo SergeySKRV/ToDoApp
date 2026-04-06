@@ -6,14 +6,17 @@
 //
 
 import Foundation
-
 import XCTest
 @testable import ToDoApp
 
 final class TaskDetailsInteractorTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var repository: TodoRepositoryMock!
     private var presenter: TaskDetailsInteractorOutputMock!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -26,6 +29,8 @@ final class TaskDetailsInteractorTests: XCTestCase {
         repository = nil
         super.tearDown()
     }
+
+    // MARK: - Tests
 
     func test_saveTask_inCreateMode_callsRepositoryCreate() {
         let sut = TaskDetailsInteractor(repository: repository, mode: .create)
@@ -131,7 +136,10 @@ final class TaskDetailsInteractorTests: XCTestCase {
     }
 }
 
+// MARK: - TodoRepositoryMock
+
 private final class TodoRepositoryMock: TodoRepositoryProtocol {
+
     var createResult: Result<Void, Error> = .success(())
     var updateResult: Result<Void, Error> = .success(())
 
@@ -180,7 +188,10 @@ private final class TodoRepositoryMock: TodoRepositoryProtocol {
     }
 }
 
+// MARK: - TaskDetailsInteractorOutputMock
+
 private final class TaskDetailsInteractorOutputMock: TaskDetailsInteractorOutputProtocol {
+
     private(set) var didSaveTaskCallCount = 0
     private(set) var didFailSavingTaskCallCount = 0
     private(set) var receivedError: Error?

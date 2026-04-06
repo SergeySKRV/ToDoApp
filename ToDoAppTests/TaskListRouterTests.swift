@@ -11,6 +11,8 @@ import UIKit
 
 final class TaskListRouterTests: XCTestCase {
 
+    // MARK: - Tests
+
     func test_openCreate_pushesViewController() {
         let navigationController = NavigationControllerSpy()
         let root = UIViewController()
@@ -52,17 +54,17 @@ final class TaskListRouterTests: XCTestCase {
     }
 
     func test_openCreate_whenViewControllerHasNoNavigationController_doesNotCrash() {
+        let root = UIViewController()
         let sut = TaskListRouter()
-        sut.viewController = UIViewController()
+        sut.viewController = root
 
         sut.openCreate()
-
-        XCTAssertTrue(true)
     }
 
     func test_openEdit_whenViewControllerHasNoNavigationController_doesNotCrash() {
+        let root = UIViewController()
         let sut = TaskListRouter()
-        sut.viewController = UIViewController()
+        sut.viewController = root
 
         let todo = TodoModel(
             id: UUID(),
@@ -77,12 +79,13 @@ final class TaskListRouterTests: XCTestCase {
         )
 
         sut.openEdit(todo: todo)
-
-        XCTAssertTrue(true)
     }
 }
 
+// MARK: - NavigationControllerSpy
+
 private final class NavigationControllerSpy: UINavigationController {
+
     private(set) var pushCallCount = 0
     private(set) var pushedViewController: UIViewController?
 
