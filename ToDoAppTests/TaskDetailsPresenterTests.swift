@@ -10,9 +10,13 @@ import XCTest
 
 final class TaskDetailsPresenterTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var view: TaskDetailsViewMock!
     private var interactor: TaskDetailsInteractorMock!
     private var router: TaskDetailsRouterMock!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -27,6 +31,8 @@ final class TaskDetailsPresenterTests: XCTestCase {
         router = nil
         super.tearDown()
     }
+
+    // MARK: - Tests
 
     func test_viewDidLoad_createMode_displaysEmptyFieldsAndCreateTitle() {
         let sut = makeSUT(mode: .create)
@@ -161,7 +167,10 @@ final class TaskDetailsPresenterTests: XCTestCase {
     }
 }
 
+// MARK: - Helpers
+
 private extension TaskDetailsPresenterTests {
+
     func makeSUT(mode: TaskDetailsMode) -> TaskDetailsPresenter {
         TaskDetailsPresenter(
             view: view,
@@ -205,14 +214,16 @@ private extension TaskDetailsPresenterTests {
     }
 }
 
+// MARK: - TaskDetailsViewMock
+
 private final class TaskDetailsViewMock: TaskDetailsViewProtocol {
+
     private(set) var displayedTitle: String?
     private(set) var displayedDescription: String?
     private(set) var displayedScreenTitle: String?
     private(set) var displayedDateText: String?
 
     private(set) var shownErrorMessage: String?
-
     private(set) var showLoadingCalls: [Bool] = []
 
     var showLoadingCalledWithTrue: Bool {
@@ -239,7 +250,10 @@ private final class TaskDetailsViewMock: TaskDetailsViewProtocol {
     }
 }
 
+// MARK: - TaskDetailsInteractorMock
+
 private final class TaskDetailsInteractorMock: TaskDetailsInteractorProtocol {
+
     private(set) var saveTaskCalled = false
     private(set) var savedTitle: String?
     private(set) var savedDescription: String?
@@ -251,7 +265,10 @@ private final class TaskDetailsInteractorMock: TaskDetailsInteractorProtocol {
     }
 }
 
+// MARK: - TaskDetailsRouterMock
+
 private final class TaskDetailsRouterMock: TaskDetailsRouterProtocol {
+
     private(set) var closeCallCount = 0
 
     func close() {

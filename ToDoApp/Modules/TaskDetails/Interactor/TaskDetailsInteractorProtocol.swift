@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Describes business logic for creating or updating a task.
 protocol TaskDetailsInteractorProtocol: AnyObject {
     func saveTask(title: String, description: String)
 }

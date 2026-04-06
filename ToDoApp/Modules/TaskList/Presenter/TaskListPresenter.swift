@@ -7,12 +7,18 @@
 
 import Foundation
 
+/// Prepares task list data for display and handles user actions from the task list screen.
 final class TaskListPresenter: TaskListPresenterProtocol {
+
+    // MARK: - Properties
+
     weak var view: TaskListViewProtocol?
     var interactor: TaskListInteractorProtocol?
     var router: TaskListRouterProtocol?
 
     private var todos: [TodoModel] = []
+
+    // MARK: - TaskListPresenterProtocol
 
     func viewDidLoad() {
         view?.showLoading(true)
@@ -53,6 +59,8 @@ final class TaskListPresenter: TaskListPresenterProtocol {
         interactor?.toggleTodo(id: todos[index].id)
     }
 
+    // MARK: - Private
+
     private func map(_ todos: [TodoModel]) -> [TaskListCellViewModel] {
         todos.map {
             TaskListCellViewModel(
@@ -67,7 +75,10 @@ final class TaskListPresenter: TaskListPresenterProtocol {
     }
 }
 
+// MARK: - TaskListInteractorOutput
+
 extension TaskListPresenter: TaskListInteractorOutput {
+
     func didLoadTodos(_ todos: [TodoModel]) {
         self.todos = todos
         view?.showLoading(false)

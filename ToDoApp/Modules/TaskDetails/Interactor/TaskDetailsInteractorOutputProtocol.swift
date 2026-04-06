@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Describes callbacks from the task details interactor.
 protocol TaskDetailsInteractorOutputProtocol: AnyObject {
     func didSaveTask()
     func didFailSavingTask(_ error: Error)

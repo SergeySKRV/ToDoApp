@@ -7,7 +7,11 @@
 
 import UIKit
 
+/// Builds and wires the Task List module components together.
 enum TaskListModuleBuilder {
+
+    // MARK: - Build
+
     static func build() -> UIViewController {
         let view = TaskListViewController()
         let repository = CoreDataTodoRepository()

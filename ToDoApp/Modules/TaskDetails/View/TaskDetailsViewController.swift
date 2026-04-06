@@ -8,6 +8,9 @@
 import UIKit
 
 final class TaskDetailsViewController: UIViewController {
+
+    // MARK: - Properties
+
     var presenter: TaskDetailsPresenterProtocol?
 
     private let scrollView = UIScrollView()
@@ -21,6 +24,8 @@ final class TaskDetailsViewController: UIViewController {
     private let titlePlaceholderLabel = UILabel()
     private let descriptionPlaceholderLabel = UILabel()
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -33,7 +38,10 @@ final class TaskDetailsViewController: UIViewController {
     }
 }
 
+// MARK: - Setup
+
 private extension TaskDetailsViewController {
+
     func setupUI() {
         view.backgroundColor = AppColors.background
         navigationItem.largeTitleDisplayMode = .never
@@ -168,7 +176,8 @@ private extension TaskDetailsViewController {
         descriptionPlaceholderLabel.isHidden = !descriptionTextView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    @objc func didTapBack() {
+    @objc
+    func didTapBack() {
         presenter?.didTapSave(
             title: titleTextView.text ?? "",
             description: descriptionTextView.text ?? "",
@@ -177,7 +186,10 @@ private extension TaskDetailsViewController {
     }
 }
 
+// MARK: - TaskDetailsViewProtocol
+
 extension TaskDetailsViewController: TaskDetailsViewProtocol {
+
     func display(title: String, description: String, screenTitle: String, dateText: String?) {
         self.title = screenTitle
         titleTextView.text = title
@@ -210,7 +222,10 @@ extension TaskDetailsViewController: TaskDetailsViewProtocol {
     }
 }
 
+// MARK: - UITextViewDelegate
+
 extension TaskDetailsViewController: UITextViewDelegate {
+
     func textViewDidChange(_ textView: UITextView) {
         updatePlaceholdersVisibility()
     }

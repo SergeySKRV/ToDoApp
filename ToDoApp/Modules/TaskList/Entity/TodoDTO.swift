@@ -7,7 +7,11 @@
 
 import Foundation
 
+/// Data transfer object that represents a todo item received from the API.
 struct TodoDTO: Decodable {
+
+    // MARK: - Properties
+
     let id: Int
     let todo: String
     let completed: Bool

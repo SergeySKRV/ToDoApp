@@ -8,15 +8,22 @@
 import Foundation
 
 final class TaskDetailsInteractor: TaskDetailsInteractorProtocol {
+
+    // MARK: - Properties
+
     weak var presenter: TaskDetailsInteractorOutputProtocol?
 
     private let repository: TodoRepositoryProtocol
     private let mode: TaskDetailsMode
 
+    // MARK: - Init
+
     init(repository: TodoRepositoryProtocol, mode: TaskDetailsMode) {
         self.repository = repository
         self.mode = mode
     }
+
+    // MARK: - TaskDetailsInteractorProtocol
 
     func saveTask(title: String, description: String) {
         switch mode {

@@ -8,14 +8,23 @@
 import Foundation
 
 final class TodoAPIService: TodoAPIServiceProtocol {
+
+    // MARK: - Properties
+
     private let session: URLSession
     private let decoder: JSONDecoder
 
-    init(session: URLSession = .shared,
-         decoder: JSONDecoder = JSONDecoder()) {
+    // MARK: - Init
+
+    init(
+        session: URLSession = .shared,
+        decoder: JSONDecoder = JSONDecoder()
+    ) {
         self.session = session
         self.decoder = decoder
     }
+
+    // MARK: - TodoAPIServiceProtocol
 
     func fetchTodos(completion: @escaping (Result<[TodoDTO], Error>) -> Void) {
         guard let url = URL(string: "https://dummyjson.com/todos?limit=0") else {
@@ -54,6 +63,7 @@ final class TodoAPIService: TodoAPIServiceProtocol {
                     completion(.failure(AppError.decodingFailed))
                 }
             }
-        }.resume()
+        }
+        .resume()
     }
 }

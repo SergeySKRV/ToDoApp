@@ -7,7 +7,11 @@
 
 import Foundation
 
+/// Domain model that represents a todo item inside the app.
 struct TodoModel: Equatable {
+
+    // MARK: - Properties
+
     let id: UUID
     let remoteID: Int?
     let title: String

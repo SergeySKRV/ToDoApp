@@ -10,10 +10,14 @@ import XCTest
 
 final class TaskListPresenterTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var view: TaskListViewMock!
     private var interactor: TaskListInteractorMock!
     private var router: TaskListRouterMock!
     private var sut: TaskListPresenter!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -34,6 +38,8 @@ final class TaskListPresenterTests: XCTestCase {
         router = nil
         super.tearDown()
     }
+
+    // MARK: - Tests
 
     func test_viewDidLoad_showsLoading_andPreloadsTodos() {
         sut.viewDidLoad()
@@ -183,7 +189,10 @@ final class TaskListPresenterTests: XCTestCase {
     }
 }
 
+// MARK: - Helpers
+
 private extension TaskListPresenterTests {
+
     func makeTodo(
         id: UUID = UUID(),
         remoteID: Int? = nil,
@@ -218,7 +227,10 @@ private extension TaskListPresenterTests {
     }
 }
 
+// MARK: - TaskListViewMock
+
 private final class TaskListViewMock: TaskListViewProtocol {
+
     private(set) var showLoadingCalls: [Bool] = []
     private(set) var shownTodos: [TaskListCellViewModel] = []
     private(set) var shownErrorMessage: String?
@@ -236,7 +248,10 @@ private final class TaskListViewMock: TaskListViewProtocol {
     }
 }
 
+// MARK: - TaskListInteractorMock
+
 private final class TaskListInteractorMock: TaskListInteractorProtocol {
+
     private(set) var preloadTodosIfNeededCallCount = 0
     private(set) var loadTodosCallCount = 0
     private(set) var searchCallCount = 0
@@ -271,7 +286,10 @@ private final class TaskListInteractorMock: TaskListInteractorProtocol {
     }
 }
 
+// MARK: - TaskListRouterMock
+
 private final class TaskListRouterMock: TaskListRouterProtocol {
+
     private(set) var openCreateCallCount = 0
     private(set) var openEditCallCount = 0
     private(set) var openedTodo: TodoModel?

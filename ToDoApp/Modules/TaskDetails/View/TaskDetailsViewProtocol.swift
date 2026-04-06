@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Describes UI updates for the task details screen.
 protocol TaskDetailsViewProtocol: AnyObject {
     func display(
         title: String,

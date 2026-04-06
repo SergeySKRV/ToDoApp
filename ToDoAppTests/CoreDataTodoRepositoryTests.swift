@@ -6,15 +6,18 @@
 //
 
 import Foundation
-
 import XCTest
 @testable import ToDoApp
 
 final class CoreDataTodoRepositoryTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var stack: CoreDataStack!
     private var dateProvider: DateProviderMock!
     private var repository: CoreDataTodoRepository!
+
+    // MARK: - Lifecycle
 
     override func setUp() {
         super.setUp()
@@ -30,6 +33,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
         stack = nil
         super.tearDown()
     }
+
+    // MARK: - isEmpty
 
     func test_isEmpty_returnsTrue_forFreshStore() {
         let exp = expectation(description: "isEmpty")
@@ -48,6 +53,28 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
 
         XCTAssertEqual(resultValue, true)
     }
+
+    func test_isEmpty_returnsFalse_afterInsert() {
+        let createExp = expectation(description: "create")
+        repository.create(title: "Task", description: nil) { _ in createExp.fulfill() }
+        wait(for: [createExp], timeout: 1.0)
+
+        let emptyExp = expectation(description: "isEmpty false")
+        var resultValue: Bool?
+
+        repository.isEmpty { result in
+            if case .success(let isEmpty) = result {
+                resultValue = isEmpty
+            }
+            emptyExp.fulfill()
+        }
+
+        wait(for: [emptyExp], timeout: 1.0)
+
+        XCTAssertEqual(resultValue, false)
+    }
+
+    // MARK: - Create
 
     func test_create_thenFetchAll_returnsCreatedTodo() {
         let createExp = expectation(description: "create")
@@ -112,6 +139,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
         XCTAssertEqual(todos.first?.taskDescription, "")
     }
 
+    // MARK: - Fetch
+
     func test_fetchAll_returnsItemsSortedByCreatedAtDescending() {
         dateProvider.now = Date(timeIntervalSince1970: 100)
         let exp1 = expectation(description: "create 1")
@@ -137,6 +166,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
 
         XCTAssertEqual(todos.map(\.title), ["New", "Old"])
     }
+
+    // MARK: - Search
 
     func test_search_findsByTitleAndDescription_caseInsensitive() {
         let exp1 = expectation(description: "create 1")
@@ -185,6 +216,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
 
         XCTAssertEqual(todos.count, 2)
     }
+
+    // MARK: - Update
 
     func test_update_updatesExistingTodoAndKeepsCreatedAt() {
         let createExp = expectation(description: "create")
@@ -274,6 +307,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
 
+    // MARK: - Delete
+
     func test_delete_removesTodo() {
         let createExp = expectation(description: "create")
         repository.create(title: "Delete me", description: nil) { _ in createExp.fulfill() }
@@ -325,6 +360,8 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
 
         wait(for: [exp], timeout: 1.0)
     }
+
+    // MARK: - Save Imported
 
     func test_saveImported_createsImportedTodos() {
         let todos = [
@@ -387,27 +424,9 @@ final class CoreDataTodoRepositoryTests: XCTestCase {
         XCTAssertEqual(models.first?.userId, 99)
         XCTAssertEqual(models.first?.updatedAt, dateProvider.now)
     }
-
-    func test_isEmpty_returnsFalse_afterInsert() {
-        let createExp = expectation(description: "create")
-        repository.create(title: "Task", description: nil) { _ in createExp.fulfill() }
-        wait(for: [createExp], timeout: 1.0)
-
-        let emptyExp = expectation(description: "isEmpty false")
-        var resultValue: Bool?
-
-        repository.isEmpty { result in
-            if case .success(let isEmpty) = result {
-                resultValue = isEmpty
-            }
-            emptyExp.fulfill()
-        }
-
-        wait(for: [emptyExp], timeout: 1.0)
-
-        XCTAssertEqual(resultValue, false)
-    }
 }
+
+// MARK: - DateProviderMock
 
 private final class DateProviderMock: DateProviderProtocol {
     var now: Date = Date()

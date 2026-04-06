@@ -9,7 +9,11 @@ import UIKit
 import Speech
 import AVFoundation
 
+/// Displays the task list screen and handles user interactions.
 final class TaskListViewController: UIViewController {
+
+    // MARK: - Properties
+
     var presenter: TaskListPresenterProtocol?
 
     private var items: [TaskListCellViewModel] = [] {
@@ -51,6 +55,8 @@ final class TaskListViewController: UIViewController {
     private var isVoiceSearchActive = false
     private var isVoiceSearchAvailable = false
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -75,7 +81,10 @@ final class TaskListViewController: UIViewController {
     }
 }
 
+// MARK: - Setup
+
 private extension TaskListViewController {
+
     func setupUI() {
         view.backgroundColor = AppColors.background
 
@@ -315,6 +324,8 @@ private extension TaskListViewController {
         blurView.addGestureRecognizer(blurTap)
     }
 
+    // MARK: - Helpers
+
     func makeActionRow(title: String, assetImageName: String, tintColor: UIColor, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
         button.backgroundColor = .clear
@@ -516,11 +527,15 @@ private extension TaskListViewController {
         } catch { }
     }
 
-    @objc func searchTextDidChange(_ textField: UITextField) {
+    // MARK: - Actions
+
+    @objc
+    func searchTextDidChange(_ textField: UITextField) {
         presenter?.didSearch(text: textField.text ?? "")
     }
 
-    @objc func didTapVoiceSearch() {
+    @objc
+    func didTapVoiceSearch() {
         if isVoiceSearchActive {
             stopVoiceRecognition()
         } else {
@@ -528,7 +543,8 @@ private extension TaskListViewController {
         }
     }
 
-    @objc func hideFocusedMenu() {
+    @objc
+    func hideFocusedMenu() {
         UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseIn]) {
             self.overlayView.alpha = 0
             self.blurView.effect = nil
@@ -540,13 +556,15 @@ private extension TaskListViewController {
         }
     }
 
-    @objc func didTapEditAction() {
+    @objc
+    func didTapEditAction() {
         guard let selectedTodoIndex else { return }
         hideFocusedMenu()
         presenter?.didSelectItem(at: selectedTodoIndex)
     }
 
-    @objc func didTapShareAction() {
+    @objc
+    func didTapShareAction() {
         guard let selectedTodoIndex else { return }
         let item = items[selectedTodoIndex]
         let text = [item.title, item.description].joined(separator: "\n")
@@ -561,17 +579,20 @@ private extension TaskListViewController {
         present(activityVC, animated: true)
     }
 
-    @objc func didTapDeleteAction() {
+    @objc
+    func didTapDeleteAction() {
         guard let selectedTodoIndex else { return }
         hideFocusedMenu()
         presenter?.didDeleteItem(at: selectedTodoIndex)
     }
 
-    @objc func didTapAdd() {
+    @objc
+    func didTapAdd() {
         presenter?.didTapAdd()
     }
 
-    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+    @objc
+    func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
 
         let location = gesture.location(in: tableView)
@@ -582,7 +603,10 @@ private extension TaskListViewController {
     }
 }
 
+// MARK: - TaskListViewProtocol
+
 extension TaskListViewController: TaskListViewProtocol {
+
     func showLoading(_ isLoading: Bool) {
         isLoading ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
@@ -593,13 +617,20 @@ extension TaskListViewController: TaskListViewProtocol {
     }
 
     func showError(_ message: String) {
-        let alert = UIAlertController(title: L10n.errorTitle, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: L10n.errorTitle,
+            message: message,
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: L10n.ok, style: .default))
         present(alert, animated: true)
     }
 }
 
+// MARK: - UITableViewDataSource, UITableViewDelegate
+
 extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         items.count
     }
@@ -625,8 +656,10 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         106
     }
 
-    func tableView(_ tableView: UITableView,
-                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: L10n.actionDelete) { [weak self] _, _, completion in
             self?.presenter?.didDeleteItem(at: indexPath.row)
             completion(true)
@@ -645,7 +678,10 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
+// MARK: - UITextFieldDelegate
+
 extension TaskListViewController: UITextFieldDelegate {
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         presenter?.didSearch(text: textField.text ?? "")

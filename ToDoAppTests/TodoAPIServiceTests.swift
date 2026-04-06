@@ -10,6 +10,8 @@ import XCTest
 
 final class TodoAPIServiceTests: XCTestCase {
 
+    // MARK: - Lifecycle
+
     override class func setUp() {
         super.setUp()
         URLProtocol.registerClass(URLProtocolMock.self)
@@ -24,6 +26,8 @@ final class TodoAPIServiceTests: XCTestCase {
         super.setUp()
         URLProtocolMock.requestHandler = nil
     }
+
+    // MARK: - Tests
 
     func test_fetchTodos_whenResponseIsValid_returnsDecodedTodos() {
         let json = """
@@ -182,6 +186,8 @@ final class TodoAPIServiceTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
 
+    // MARK: - Helpers
+
     private func makeSUT() -> TodoAPIService {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLProtocolMock.self]
@@ -190,7 +196,10 @@ final class TodoAPIServiceTests: XCTestCase {
     }
 }
 
+// MARK: - URLProtocolMock
+
 private final class URLProtocolMock: URLProtocol {
+
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -224,5 +233,5 @@ private final class URLProtocolMock: URLProtocol {
         }
     }
 
-    override func stopLoading() {}
+    override func stopLoading() { }
 }

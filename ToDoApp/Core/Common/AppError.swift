@@ -7,13 +7,19 @@
 
 import Foundation
 
+/// App-specific error cases.
 enum AppError: LocalizedError {
+
+    // MARK: - Cases
+
     case invalidURL
     case noData
     case decodingFailed
     case objectNotFound
     case persistenceFailed(String)
     case networkFailed(String)
+
+    // MARK: - LocalizedError
 
     var errorDescription: String? {
         switch self {
