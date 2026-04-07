@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol TaskDetailsPresenterProtocol: AnyObject {
+protocol TaskDetailsPresenterProtocol: AnyObject {
     func viewDidLoad()
     func didTapSave(title: String, description: String, isCompleted: Bool)
     func didTapClose()
